@@ -26,6 +26,14 @@ import boto3
 
 ########################################################
 
+def s3_to_pandas(bucket_name, file_name, columns):
+    obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+    df = pd.read_csv(io.BytesIO(obj['Body'].read()), compression='zip',
+                     error_bad_lines=True, header=None, index_col=None,
+                     sep='\t')
+    df.columns = columns
+    return df
+
 def get_article_mention_language(translateInfo):
     """ For GDELT Mentions
     """
