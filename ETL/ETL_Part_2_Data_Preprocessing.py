@@ -159,12 +159,27 @@ gdelt_events_cols = gdelt_events_descrip['tableId'].tolist()
 gdelt_mentions_cols = gdelt_mentions_descrip.iloc[:16,1].tolist()
 gdelt_gkg_cols = gdelt_gkg_descrip['tableId'].tolist()
 
-#### (ii) Get List of all available GDELT Files in S3 Bucket
+#### (iii) Get List of all available GDELT Files in S3 Bucket
 BUCKET_NAME = "*****************"
 s3_resource = boto3.resource('s3')
 gdelt_storage_bucket = s3_resource.Bucket(BUCKET_NAME)
 
-#### (iii) Inserting GDELT Mentions into MongoDB
+gdelt_events_files, gdelt_mentions_files, gdelt_gkg_files = [], [], []
+for temp_gdelt_file in gdelt_storage_bucket.objects.all():
+    
+    # encode('utf8') required because temp_gdelt_file elements are in unicode
+    temp_key_name = temp_gdelt_file.key.encode('utf8')
+    
+    if 'export' in temp_key_name:
+        gdelt_events_files.append(temp_key_name)
+            
+    elif 'mentions' in temp_key_name:
+        gdelt_mentions_files.append(temp_key_name)      
+    
+    elif 'gkg' in temp_key_name:
+        gdelt_gkg_files.append(temp_key_name)
+
+#### (iv) Inserting GDELT Mentions into MongoDB
 successful_mongodb_insertions, failed_mongodb_insertions = [], []
 
 for i, file in enumerate(gdelt_mentions_files):
